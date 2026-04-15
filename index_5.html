@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>楽天市場 競合比較分析ツール</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+:root {
+  --B:  #1462D4; --Bdk: #0D4FAF; --Blt: #EBF2FF; --Bmd: #C8DCFF;
+  --bg: #EEF1F6; --sf:  #ffffff;
+  --t1: #1A1F2E; --t2:  #3D4451; --mu: #717A8A; --bd: #DDE1E9;
+  --G:  #1A7A4A; --Glt: #E0F5EC;
+  --Am: #B06A00; --Alt: #FEF3DC;
+  --sh: 0 2px 12px rgba(20,98,212,.08), 0 1px 3px rgba(0,0,0,.05);
+  --fn: "Hiragino Kaku Gothic ProN","Hiragino Kaku Gothic Pro",
+        "ヒラギノ角ゴ ProN W3","ヒラギノ角ゴシック",
+        "Yu Gothic Medium","游ゴシック Medium",YuGothic,"Meiryo",sans-serif;
+}
+body { font-family:var(--fn); font-size:14px; background:var(--bg); color:var(--t1);
+  min-height:100vh; line-height:1.6;
+  background-image:radial-gradient(circle,rgba(20,98,212,.055) 1px,transparent 1px);
+  background-size:28px 28px; }
+.hdr { background:var(--B); height:56px; display:flex; align-items:center;
+  padding:0 28px; gap:12px; position:sticky; top:0; z-index:100;
+  box-shadow:0 2px 8px rgba(14,50,120,.3); }
+.logo { color:#fff; font-size:17px; font-weight:600; }
+.logo em { font-style:normal; background:rgba(255,255,255,.2); padding:2px 8px; border-radius:3px; margin-right:6px; }
+.pill { background:rgba(255,255,255,.18); color:rgba(255,255,255,.92); font-size:10px;
+  font-weight:600; letter-spacing:1px; padding:2px 8px; border-radius:2px; border:1px solid rgba(255,255,255,.3); }
+.hdr-r { color:rgba(255,255,255,.5); font-size:11px; margin-left:auto; }
+.wrap { max-width:1200px; margin:0 auto; padding:32px 24px 80px; }
+.sec { display:inline-flex; align-items:center; background:var(--B); color:#fff;
+  font-size:13px; font-weight:600; letter-spacing:.8px; padding:7px 32px 7px 16px; margin-bottom:8px;
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%); }
+.h1 { border-left:5px solid var(--B); padding-left:16px; font-size:22px; font-weight:600; }
+.h2 { border-left:5px solid var(--B); padding-left:14px; font-size:20px; font-weight:600; }
+.card { background:var(--sf); border-radius:6px; box-shadow:var(--sh); border:1px solid var(--bd); padding:28px 32px; }
+.fi label { display:block; font-size:12px; font-weight:600; color:var(--t2); margin-bottom:6px; }
+.fi label b { color:#C0392B; }
+.fi input, .fi textarea {
+  width:100%; border:1.5px solid var(--bd); border-radius:4px;
+  padding:9px 13px; font-family:var(--fn); font-size:13px; color:var(--t1);
+  background:#F4F5F7; outline:none; transition:border-color .18s,box-shadow .18s; }
+.fi textarea { resize:vertical; line-height:1.5; font-size:12px; }
+.fi input:focus, .fi textarea:focus { border-color:var(--B); background:#fff; box-shadow:0 0 0 3px rgba(20,98,212,.12); }
+.fi input::placeholder, .fi textarea::placeholder { color:#A8B0BE; }
+.tab-bar { display:flex; border-bottom:2px solid var(--bd); margin-bottom:14px; }
+.tab-btn { padding:8px 20px; font-family:var(--fn); font-size:13px; font-weight:600;
+  border:none; background:none; cursor:pointer; color:var(--mu);
+  border-bottom:3px solid transparent; margin-bottom:-2px; transition:all .18s; }
+.tab-btn.active { color:var(--B); border-bottom-color:var(--B); }
+.bp { background:var(--B); color:#fff; border:none; border-radius:4px;
+  padding:10px 28px; font-family:var(--fn); font-size:14px; font-weight:600;
+  cursor:pointer; display:inline-flex; align-items:center; gap:7px;
+  transition:background .18s,box-shadow .18s; }
+.bp:hover:not(:disabled) { background:var(--Bdk); box-shadow:0 3px 10px rgba(20,98,212,.35); }
+.bp:disabled { opacity:.4; cursor:not-allowed; }
+.bg { background:#fff; border:1.5px solid var(--bd); border-radius:4px;
+  padding:9px 18px; font-family:var(--fn); font-size:13px; font-weight:500;
+  cursor:pointer; color:var(--t2); transition:all .18s; }
+.bg:hover { border-color:var(--B); color:var(--B); background:var(--Blt); }
+@keyframes spin { to { transform:rotate(360deg); } }
+.spin { width:40px; height:40px; border:3px solid var(--Bmd); border-top-color:var(--B);
+  border-radius:50%; animation:spin .7s linear infinite; margin:0 auto 20px; }
+@keyframes fu { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+.step { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:4px;
+  border:1px solid var(--bd); background:#F4F5F7; font-size:13px; font-weight:500;
+  color:var(--mu); animation:fu .25s ease both; }
+.step.on { background:var(--Blt); border-color:var(--Bmd); color:var(--B); }
+.step.ok { background:var(--Glt); border-color:#A7DFC4; color:var(--G); }
+.err { background:#FEF2F2; border:1px solid #FECACA; border-left:4px solid #DC2626;
+  border-radius:6px; padding:16px 20px; color:#B91C1C; font-size:13px; line-height:1.8; }
+.sg { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
+.sc { background:#fff; border-radius:6px; border:1px solid var(--bd); padding:16px 18px; }
+.sl { font-size:12px; color:var(--mu); margin-bottom:5px; }
+.sv { font-size:20px; font-weight:700; color:var(--B); word-break:break-all; }
+.tw { overflow-x:auto; -webkit-overflow-scrolling:touch; border-radius:6px; border:1px solid var(--bd); box-shadow:var(--sh); }
+.ct { border-collapse:collapse; width:100%; min-width:860px; table-layout:fixed; }
+.ct th, .ct td { border-bottom:1px solid var(--bd); vertical-align:middle; font-size:13px; }
+.ct th.lc, .ct td.lc { position:sticky; left:0; z-index:5; }
+.ct th.lc { z-index:15; }
+.ct thead th { padding:13px 14px; font-weight:600; text-align:center; border-bottom:2px solid transparent; white-space:nowrap; }
+.ct tbody tr:nth-child(even) td { background:#FAFBFD; }
+.ct tbody tr:hover td { background:#EEF4FF!important; }
+.ct tbody tr:hover td.lc { background:#D8E6FF!important; }
+.ct tbody tr:hover td.ow { background:#D4E5FF!important; }
+.ct td.ow { background:var(--Blt)!important; }
+.ct td { padding:12px 14px; text-align:center; }
+.ct td.lc { background:#F4F5F8!important; border-right:2px solid var(--bd);
+  text-align:left; font-size:12px; font-weight:600; color:var(--t2); min-width:188px; }
+.ct tr:nth-child(even) td.lc { background:#ECEFF5!important; }
+.bok { background:var(--Glt); color:var(--G); padding:3px 10px; border-radius:3px; font-weight:700; }
+.bmd { background:var(--Alt); color:var(--Am); padding:3px 10px; border-radius:3px; font-weight:700; }
+.bng { background:#FEE2E2; color:#DC2626; padding:3px 10px; border-radius:3px; font-weight:700; }
+.by  { background:var(--Glt); color:var(--G); padding:3px 10px; border-radius:3px; font-size:12px; font-weight:600; }
+.bn  { background:#F3F4F6; color:#9CA3AF; padding:3px 10px; border-radius:3px; font-size:12px; font-weight:600; }
+.rkg { background:#FEF3C7; color:#92400E; padding:4px 11px; border-radius:3px; font-weight:700; font-size:14px; }
+.rkb { background:var(--Blt); color:var(--B); padding:4px 11px; border-radius:3px; font-weight:700; font-size:14px; }
+.rkn { background:#F3F4F6; color:#9CA3AF; padding:4px 11px; border-radius:3px; font-size:12px; }
+.cpn { background:var(--Blt); color:var(--B); border:1px solid var(--Bmd); border-radius:3px; padding:3px 8px; font-size:11px; font-weight:600; }
+.pv  { font-size:19px; font-weight:700; line-height:1; }
+.ps  { font-size:10px; color:var(--mu); margin-top:3px; }
+.nv  { font-size:18px; font-weight:700; }
+.nu  { font-size:10px; color:var(--mu); font-weight:400; }
+.sf2 { color:var(--G); font-weight:700; font-size:12px; }
+.sp2 { color:var(--mu); font-size:12px; }
+.st  { color:#F59E0B; font-size:14px; letter-spacing:-2px; line-height:1; }
+.ptv { color:#6D28D9; font-weight:700; font-size:15px; }
+.pim { width:72px; height:72px; object-fit:cover; border-radius:6px; border:1px solid var(--bd); display:block; margin:0 auto; }
+.iph { width:72px; height:72px; background:var(--Blt); border:1.5px dashed var(--Bmd);
+  border-radius:6px; display:flex; align-items:center; justify-content:center; margin:0 auto; font-size:24px; }
+.nb  { background:var(--B); color:#fff; padding:1px 5px; border-radius:3px; font-size:9px; font-weight:700; margin-right:5px; vertical-align:middle; }
+.br  { background:var(--Glt); color:var(--G); border-radius:3px; padding:2px 8px; font-size:11px; font-weight:600; }
+.fnnote { background:var(--Blt); border:1px solid var(--Bmd); border-left:4px solid var(--B);
+  border-radius:4px; padding:12px 16px; font-size:11px; color:#0D4FAF; line-height:1.8;
+  margin-top:16px; display:flex; gap:8px; align-items:flex-start; }
+.hint { background:#FFFBEB; border:1px solid #FDE68A; border-left:4px solid #F59E0B;
+  border-radius:4px; padding:10px 14px; font-size:12px; color:#78350F; line-height:1.7; margin-bottom:12px; }
+.hint-blue { background:#EEF4FF; border:1px solid var(--Bmd); border-left:4px solid var(--B);
+  border-radius:4px; padding:10px 14px; font-size:12px; color:#0D4FAF; line-height:1.7; margin-bottom:12px; }
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="logo"><em>楽天</em>競合比較分析ツール</div>
+  <span class="pill">ローカルChrome専用 / JSONP</span>
+  <span class="hdr-r">AppID: 1095621455715530166（固定）</span>
+</header>
+
+<div class="wrap">
+  <div style="margin-bottom:28px">
+    <h1 class="h1">楽天市場 競合比較分析</h1>
+    <p style="color:var(--mu);margin-top:8px;font-size:13px;padding-left:21px">
+      自社商品のHTMLソースを貼り付けると、SKU・価格・レビューなど15項目を正確に読み取り、競合3社と比較します
+    </p>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="sec">STEP 1　自社商品データ</div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabHtml" onclick="switchTab('html')">📋 HTMLソース貼り付け（高精度・推奨）</button>
+      <button class="tab-btn" id="tabUrl"  onclick="switchTab('url')">🔗 URLのみ（簡易）</button>
+    </div>
+
+    <div id="panelHtml">
+      <div class="hint">
+        <strong>📋 HTMLソースの取得方法</strong><br>
+        ① 楽天市場の自社商品ページを Chrome で開く<br>
+        ② アドレスバーの URL 先頭に <code style="background:#FEF3C7;padding:1px 4px;border-radius:2px">view-source:</code> を付けてEnter<br>
+        ③ 全選択（Ctrl+A）→ コピー（Ctrl+C）→ 下のボックスに貼り付け（何万行でもOK）
+      </div>
+      <div class="fi" style="margin-bottom:12px">
+        <label>自社商品ページ HTMLソース <b>＊</b></label>
+        <textarea id="ownHtml" rows="7" placeholder="view-source: で取得したHTMLをここに貼り付けてください"></textarea>
+      </div>
+      <div class="fi">
+        <label>自社商品URL（任意・リンク用）</label>
+        <input id="ownUrlForHtml" type="url" placeholder="https://item.rakuten.co.jp/shop/item-id/">
+      </div>
+    </div>
+
+    <div id="panelUrl" style="display:none">
+      <div class="hint-blue">
+        ⚠ URLのみモードでは楽天APIのshopCode検索でデータを取得します。<br>
+        <strong>SKU数（バリエーション）は取得できず「—」表示になります。</strong><br>
+        正確なSKU数が必要な場合はHTMLソース貼り付けをご利用ください。
+      </div>
+      <div class="fi">
+        <label>自社商品URL <b>＊</b></label>
+        <input id="ownUrl" type="url" placeholder="https://item.rakuten.co.jp/ショップ名/商品ID/">
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="sec">STEP 2　競合商品データ</div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="hint">
+      <strong>📋 競合商品のHTMLソース取得方法（自社商品と同じ手順）</strong><br>
+      ① 競合商品ページを Chrome で開く　② アドレスバー先頭に <code style="background:#FEF3C7;padding:1px 4px;border-radius:2px">view-source:</code> を付けてEnter　③ 全選択（Ctrl+A）→ コピー → 貼り付け
+    </div>
+
+    <!-- 競合A -->
+    <div style="border:1.5px solid var(--bd);border-radius:5px;padding:16px 20px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;color:var(--B);margin-bottom:10px">競合A</div>
+      <div class="fi" style="margin-bottom:10px">
+        <label>HTMLソース（貼り付け推奨）</label>
+        <textarea id="compAHtml" rows="4" placeholder="競合AのHTMLソースを貼り付けてください（省略可）"></textarea>
+      </div>
+      <div class="fi">
+        <label>商品URL <b>＊</b></label>
+        <input id="compAUrl" type="url" placeholder="https://item.rakuten.co.jp/shop/item-id/">
+      </div>
+    </div>
+
+    <!-- 競合B -->
+    <div style="border:1.5px solid var(--bd);border-radius:5px;padding:16px 20px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;color:var(--B);margin-bottom:10px">競合B</div>
+      <div class="fi" style="margin-bottom:10px">
+        <label>HTMLソース（貼り付け推奨）</label>
+        <textarea id="compBHtml" rows="4" placeholder="競合BのHTMLソースを貼り付けてください（省略可）"></textarea>
+      </div>
+      <div class="fi">
+        <label>商品URL <b>＊</b></label>
+        <input id="compBUrl" type="url" placeholder="https://item.rakuten.co.jp/shop/item-id/">
+      </div>
+    </div>
+
+    <!-- 競合C -->
+    <div style="border:1.5px solid var(--bd);border-radius:5px;padding:16px 20px">
+      <div style="font-size:13px;font-weight:700;color:var(--B);margin-bottom:10px">競合C</div>
+      <div class="fi" style="margin-bottom:10px">
+        <label>HTMLソース（貼り付け推奨）</label>
+        <textarea id="compCHtml" rows="4" placeholder="競合CのHTMLソースを貼り付けてください（省略可）"></textarea>
+      </div>
+      <div class="fi">
+        <label>商品URL <b>＊</b></label>
+        <input id="compCUrl" type="url" placeholder="https://item.rakuten.co.jp/shop/item-id/">
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="sec">STEP 3　検索順位キーワード・AI設定</div>
+  <div class="card" style="margin-bottom:24px">
+    <div class="fi" style="margin-bottom:16px">
+      <label>検索キーワード <b>＊</b></label>
+      <input id="keyword" type="text" placeholder="検索キーワードを入力">
+      <div style="margin-top:5px;font-size:11px;color:var(--mu)">
+        このキーワードでのオーガニック検索順位をAPIで取得します（貴社・競合共通）
+      </div>
+    </div>
+
+    <div style="border-top:1px solid var(--bd);margin:16px 0;padding-top:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--mu);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+        <span style="font-size:15px">🤖</span> AI分析設定（「その他の特徴」の深掘り比較）
+      </div>
+      <div class="fi" style="margin-bottom:6px">
+        <label>Anthropic APIキー（任意）</label>
+        <input id="anthropicKey" type="password" placeholder="sk-ant-api03-... を入力するとAIが差別化ポイントを比較分析します">
+      </div>
+      <div style="font-size:11px;color:var(--mu);line-height:1.6">
+        未入力の場合、「その他の特徴」はキーワード抽出のみになります。
+        APIキーは <a href="https://console.anthropic.com/" target="_blank" style="color:var(--B)">console.anthropic.com</a> で取得できます。入力値はブラウザ内のみで使用し、外部には送信されません。
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:16px">
+      <button class="bp" id="searchBtn" onclick="startSearch()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        競合分析を開始
+      </button>
+      <span style="color:var(--mu);font-size:12px">Enterキーでも実行できます</span>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="ldiv" style="display:none">
+    <div class="card" style="text-align:center;padding:52px 36px;margin-bottom:24px">
+      <div class="spin"></div>
+      <div id="lmsg" style="font-size:17px;font-weight:600;margin-bottom:6px"></div>
+      <div id="lsub" style="color:var(--mu);font-size:13px;margin-bottom:28px"></div>
+      <div id="lsteps" style="max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:9px;text-align:left"></div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div id="ewrap" style="display:none;margin-bottom:24px"></div>
+
+  <!-- Result -->
+  <div id="rdiv" style="display:none">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+      <div>
+        <h2 class="h2">競合比較レポート</h2>
+        <p id="rmeta" style="color:var(--mu);font-size:12px;margin-top:5px;padding-left:20px"></p>
+      </div>
+      <button class="bg" onclick="resetApp()">← 再分析</button>
+    </div>
+    <div class="sg" id="sgrid"></div>
+    <div class="sec">COMPARISON TABLE</div>
+    <div class="tw">
+      <table class="ct">
+        <colgroup>
+          <col style="width:188px"><col style="width:182px">
+          <col style="width:182px"><col style="width:182px"><col style="width:182px">
+        </colgroup>
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="fnnote">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:2px">
+        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+      </svg>
+      <span id="fnote"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+var APP_ID   = '1095621455715530166';
+var ENDPOINT = 'https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601';
+
+/* DataCleaner */
+var DC = {
+  price:  function(v){ if(typeof v==='number') return Math.round(v); return parseInt(String(v).replace(/[^\d]/g,''),10)||0; },
+  count:  function(v){ if(typeof v==='number') return Math.round(v); var s=String(v); if(s.indexOf('\u4e07')!==-1) return Math.round(parseFloat(s)*10000); return parseInt(s.replace(/[^\d]/g,''),10)||0; },
+  rating: function(v){ if(typeof v==='number') return Math.round(v*100)/100; return Math.round(parseFloat(String(v).replace(/[^\d.]/g,''))*100)/100||0; },
+  ship:   function(f){ if(f===0||f==='0') return '\u9001\u6599\u7121\u6599'; if(f===1||f==='1') return '\u9001\u6599\u5225\u9014'; return '\u8981\u78ba\u8a8d'; },
+  yen:    function(n){ return Number(n).toLocaleString('ja-JP')+'\u5186'; },
+};
+
+/* タブ切り替え */
+function switchTab(mode) {
+  var h = mode === 'html';
+  document.getElementById('tabHtml').className = 'tab-btn' + (h  ? ' active' : '');
+  document.getElementById('tabUrl').className  = 'tab-btn' + (!h ? ' active' : '');
+  document.getElementById('panelHtml').style.display = h  ? '' : 'none';
+  document.getElementById('panelUrl').style.display  = h  ? 'none' : '';
+}
+
+/*
+  parseOwnFromPastedHtml
+  ─────────────────────────────────────────────────────────
+  自社商品HTMLソース → 商品オブジェクト
+
+  【SKU数の取得方法】
+  楽天商品ページには必ず id="item-page-app-data" という
+  application/json 型の script タグが含まれる。
+  その中の itemInfoSku.variantSelectors を使い、
+  各軸の values.length を掛け合わせて正確なSKU総数を算出する。
+
+  例: カラー16種のみ → 16
+      サイズ4種 × カラー7種 → 28
+
+  ※ 正規表現リテラル内に <scr+ipt を書くと HTML パーサーが
+    script タグを誤って分割するため、文字列結合で構築する。
+*/
+function parseOwnFromPastedHtml(htmlStr, linkUrl) {
+
+  /* --- item-page-app-data 抽出 --- */
+  var re = new RegExp(
+    '<scr' + 'ipt[^>]+id=["\']item-page-app-data["\'][^>]*>([\\s\\S]+?)<\\/scr' + 'ipt>',
+    'i'
+  );
+  var m = htmlStr.match(re);
+  if (!m) {
+    return { _error: 'item-page-app-data が見つかりませんでした。\nview-source: で取得したページのHTMLを全文貼り付けてください。' };
+  }
+
+  var appData;
+  try { appData = JSON.parse(m[1]); }
+  catch(e) { return { _error: 'JSONの解析に失敗しました: ' + e.message }; }
+
+  /* itemInfoSku （api.data 優先、newApi をフォールバック） */
+  var isku = null;
+  if (appData.api && appData.api.data && appData.api.data.itemInfoSku) {
+    isku = appData.api.data.itemInfoSku;
+  } else if (appData.newApi && appData.newApi.itemInfoSku) {
+    isku = appData.newApi.itemInfoSku;
+  }
+  if (!isku) {
+    return { _error: 'itemInfoSku データが見つかりませんでした。' };
+  }
+
+  /* --- SKU数 variantSelectors から正確に計算 --- */
+  var variantSelectors = isku.variantSelectors || [];
+  var skuTotal = null;
+  var skuDesc  = '';
+  if (variantSelectors.length > 0) {
+    var total = 1;
+    var parts = [];
+    variantSelectors.forEach(function(axis) {
+      var cnt = (axis.values || []).length;
+      if (cnt > 0) { total *= cnt; parts.push(axis.label + ' ' + cnt + '\u7a2e'); }
+    });
+    skuTotal = total;
+    skuDesc  = parts.join(' \u00d7 ');
+  } else {
+    /* variantSelectors がない場合は sku 配列件数 */
+    var skuArr = isku.sku || [];
+    if (skuArr.length > 1) {
+      skuTotal = skuArr.length; skuDesc = 'sku\u914d\u5217\u304b\u3089';
+    } else {
+      /* バリエーションなし（単品商品）→ SKU数は1 */
+      skuTotal = 1; skuDesc = '\u30d0\u30ea\u30a8\u30fc\u30b7\u30e7\u30f3\u306a\u3057';
+    }
+  }
+
+  /* --- レビュー ---
+     優先順位:
+       1. api.data.itemReviewInfo.summary
+       2. newApi.itemReviewInfo.summary
+       3. rat.customParameter の irevnum / irevrate（最も確実なフォールバック）
+          楽天の全商品ページに存在する RAT計測パラメータから抽出 */
+  var reviewInfo = {};
+  if (appData.api && appData.api.data && appData.api.data.itemReviewInfo) {
+    reviewInfo = appData.api.data.itemReviewInfo;
+  } else if (appData.newApi && appData.newApi.itemReviewInfo) {
+    reviewInfo = appData.newApi.itemReviewInfo;
+  }
+  var revSummary  = reviewInfo.summary || {};
+  var reviewCount = DC.count(revSummary.itemReviewCount   || 0);
+  var reviewAvg   = DC.rating(revSummary.itemReviewRating || 0);
+
+  /* フォールバック: rat.customParameter から irevnum / irevrate を抽出
+     例: "{'irevnum':[784],'irevrate':[4.76],...}" */
+  if (reviewCount === 0 || reviewAvg === 0) {
+    try {
+      var ratParam = (appData.rat && appData.rat.customParameter) || '';
+      if (!ratParam) {
+        /* ratがない場合はisku直下のratCustomParametersも試す */
+        var ratInput = htmlStr.match(/id="ratCustomParameters"[^>]+value="([^"]+)"/);
+        if (ratInput) ratParam = ratInput[1];
+      }
+      if (ratParam) {
+        var mRevNum = ratParam.match(/'irevnum'\s*:\s*\[([^\]]+)\]/);
+        var mRevRat = ratParam.match(/'irevrate'\s*:\s*\[([^\]]+)\]/);
+        if (reviewCount === 0 && mRevNum) reviewCount = DC.count(parseFloat(mRevNum[1]));
+        if (reviewAvg   === 0 && mRevRat) reviewAvg   = DC.rating(parseFloat(mRevRat[1]));
+      }
+    } catch(e) { /* フォールバック失敗は無視 */ }
+  }
+
+  /* --- 価格 --- */
+  var purchaseInfo   = isku.purchaseInfo || {};
+  var bySellType     = purchaseInfo.purchaseBySellType || {};
+  var normalPurchase = bySellType.normalPurchase || {};
+  var priceRange     = normalPurchase.price || {};
+  var price = DC.price(priceRange.minPrice || priceRange.maxPrice || 0);
+
+  /* --- 送料 ---
+     優先順位:
+       1. sku[0].shipping.postageIncluded（SKUレベル・最も正確）
+       2. isku.shipping.postageIncluded（商品レベル）
+       3. sku[0].shipping.singleItemShipping === 0（単品送料0円）
+       4. タイトル・商品説明に「送料無料」を含む（テキストフォールバック） */
+  var skuArr0  = (isku.sku || [])[0] || {};
+  var skuShip  = skuArr0.shipping || {};
+  var freeShip = false;
+  if      (skuShip.postageIncluded === true)                         freeShip = true;
+  else if (skuShip.postageIncluded === false)                        freeShip = false;
+  else if (isku.shipping && isku.shipping.postageIncluded === true)  freeShip = true;
+  else if (isku.shipping && isku.shipping.postageIncluded === false) freeShip = false;
+  else if (skuShip.singleItemShipping === 0)                         freeShip = true;
+  else {
+    var shipText = (isku.title || '') + ' ' + productDesc;
+    freeShip = /\u9001\u6599\u7121\u6599/.test(shipText);
+  }
+  var shipping = freeShip ? '\u9001\u6599\u7121\u6599' : '\u9001\u6599\u5225\u9014';
+
+  /* --- 画像 ---
+     楽天商品ページのフリック画像 = 商品説明画像(media.images) + SKU選択肢画像(media.skuImages)
+     例: MagRideヘルメット → 商品画像20枚 + カラー画像16枚 = 36枚（nimg:[36]と一致） */
+  var media      = isku.media || {};
+  var images     = media.images    || [];
+  var skuImages  = media.skuImages || [];
+  var flickImages = (images.length + skuImages.length) || null;
+  var imageUrl    = (images[0] && images[0].location) ? images[0].location : '';
+
+  /* --- 商品説明充実度 --- */
+  var pcFields    = isku.pcFields || {};
+  var productDesc = pcFields.productDescription || '';
+  var descLen     = productDesc.length;
+  var descQuality = descLen > 2000 ? '\u25ce' : descLen > 600 ? '\u25cb' : '\u25b3';
+  var descReason  = descLen > 2000 ? '\u52d5\u753b\u30fbFAQ\u30fb\u6bd4\u8f03\u8868\u3042\u308a' : descLen > 600 ? '\u4ed5\u69d8\u8868\u30fb\u8aac\u660e\u5145\u5b9f' : '\u8aac\u660e\u6587\u304c\u5c11\u306a\u3044';
+
+  /* --- ランキング --- */
+  var breadcrumbs = isku.breadcrumbs || {};
+  var shopCatNames = (breadcrumbs.shopCategoryBreadcrumbs || []).map(function(b){ return b.name||''; }).join(' ');
+  var hasRanking = /\u30e9\u30f3\u30ad\u30f3\u30b0|ranking/i.test(shopCatNames);
+
+  /* --- ポイント率 --- */
+  var pci0 = ((isku.pointCampaignInfo || [])[0]) || {};
+  var pc0  = pci0.pointCampaign || {};
+  var pointRate = pc0.pointRate ? pc0.pointRate + '倍' : '1倍';
+
+  /* --- ギフト対応 --- */
+  var allText = (isku.title || '') + ' ' + productDesc;
+  var giftSupport = !!(isku.giftFlag) || /\u30ae\u30d5\u30c8|\u540d\u5165\u308c|\u30e9\u30c3\u30d4\u30f3\u30b0|\u306e\u3057/.test(allText);
+
+  /* --- クーポン --- */
+  var coupon = /\u30af\u30fc\u30dd\u30f3|\u5272\u5f15|OFF/.test(allText) ? '\u3042\u308a\uff08\u8a73\u7d30\u306f\u30da\u30fc\u30b8\u78ba\u8a8d\uff09' : '\u306a\u3057';
+
+  /* --- その他の特徴 --- */
+  var features = [];
+  if (/\u30e9\u30f3\u30ad\u30f3\u30b0|1\u4f4d/.test(isku.title||''))  features.push('\u697d\u5929\u30e9\u30f3\u30ad\u30f3\u30b0\u6383\u8f09\u5546\u54c1');
+  if (giftSupport)                                                        features.push('\u30ae\u30d5\u30c8\u30fb\u540d\u5165\u308c\u5bfe\u5fdc');
+  if (freeShip)                                                           features.push('\u9001\u6599\u7121\u6599\u3067\u5168\u56fd\u914d\u9001');
+  if (/SG\u30de\u30fc\u30af|SG\u898f\u683c/.test(allText))             features.push('SG\u898f\u683c\u8a8d\u8a3c\u6e08\u307f');
+  if (/\u8b66\u5bdf|\u5b89\u5168\u6559\u5ba4/.test(allText))            features.push('\u8b66\u5bdf\u30fb\u5b89\u5168\u6559\u5ba4\u63a1\u7528\u5b9f\u7e3e');
+  if (/\u8fd4\u54c1|\u4ea4\u63db\u4fdd\u8a3c/.test(allText))            features.push('\u8fd4\u54c1\u30fb\u4ea4\u63db\u4fdd\u8a3c\u3042\u308a');
+  if (/\u7ffb\u65e5|\u5373\u65e5/.test(allText))                        features.push('\u7ffb\u65e5\u30fb\u5373\u65e5\u767a\u9001\u5bfe\u5fdc');
+  if (/\u8efd\u91cf|g|g\u672a\u6e80/.test(allText))                     features.push('\u8d85\u8efd\u91cf\u8a2d\u8a08');
+
+  /* --- ショップ情報 --- */
+  var shopData = appData.shop || {};
+  var shopName = shopData.shopName || isku.shopId || '\u2014';
+  var shopUrlCode = shopData.shopUrl || isku.shopId || '';
+  var itemNum  = isku.newItemNumber || isku.manageNumber || '';
+  var itemUrl  = linkUrl
+    || (shopUrlCode && itemNum ? 'https://item.rakuten.co.jp/' + shopUrlCode + '/' + itemNum + '/' : '#');
+
+  return {
+    label: '\u8cb4\u793e', isOwn: true,
+    shopName:      shopName,
+    productName:   isku.title || '\u2014',
+    imageUrl:      imageUrl,
+    itemUrl:       itemUrl,
+    price:         price,
+    shipping:      shipping,
+    reviewCount:   reviewCount,
+    reviewAvg:     reviewAvg,
+    descQuality:   descQuality,
+    descReason:    descReason,
+    searchRank:    null,
+    pointRate:     pointRate,
+    coupon:        coupon,
+    variations:    skuTotal,       /* variantSelectors から正確に取得した値 */
+    variationsDesc: skuDesc,
+    hasRanking:    hasRanking,
+    giftSupport:   giftSupport,
+    flickImages:   flickImages,
+    features:      features.slice(0, 4),
+    _source:       'html',
+    _shopUrlCode:  shopUrlCode,   /* API補完用: shopCode */
+    _rawDesc:      productDesc,   /* AI分析用: 商品説明文（最大500文字使用） */
+  };
+}
+
+/* URL解析 */
+function parseRakutenUrl(url) {
+  if (!url) return null;
+  var m = url.match(/item\.rakuten\.co\.jp\/([^\/]+)\/([^\/?\s]+)/i);
+  return m ? { shopCode: m[1], itemCode: m[2] } : null;
+}
+
+/*
+  buildCompProduct
+  ─────────────────────────────────────────────────────────
+  競合商品（APIデータのみ）→ 商品オブジェクト
+
+  【重要】SKU数（variations）は必ず null を返す。
+  APIからはSKU情報が取得できないため、推測は一切行わない。
+  表示は「— 要ページ確認」となる。
+*/
+function buildCompProduct(item, rank, label) {
+  var price       = DC.price(item.itemPrice);
+  var reviewCount = DC.count(item.reviewCount);
+  var reviewAvg   = DC.rating(item.reviewAverage);
+  var shipping    = DC.ship(item.postageFlag);
+
+  var imgs = item.mediumImageUrls || [];
+  var imageUrl = '';
+  if (imgs.length > 0) {
+    imageUrl = (typeof imgs[0] === 'string') ? imgs[0] : (imgs[0].imageUrl || '');
+  }
+
+  var pointRate = (item.pointRate != null) ? (item.pointRate + '倍') : '1倍';
+
+  var name    = item.itemName    || '';
+  var caption = item.itemCaption || '';
+  var all     = name + ' ' + caption;
+
+  var rankKw     = ['\u30e9\u30f3\u30ad\u30f3\u30b0', '1\u4f4d', '\u697d\u59291\u4f4d', '\u58f2\u308c\u7b4b'];
+  var hasRanking = rankKw.some(function(k){ return name.indexOf(k) !== -1; });
+
+  var giftKw     = ['\u30ae\u30d5\u30c8', '\u540d\u5165\u308c', '\u30e9\u30c3\u30d4\u30f3\u30b0', '\u306e\u3057'];
+  var giftSupport = (item.giftFlag === 1) || giftKw.some(function(k){ return all.indexOf(k) !== -1; });
+
+  var coupon  = /\u30af\u30fc\u30dd\u30f3|\u5272\u5f15|OFF/.test(all)
+    ? '\u3042\u308a\uff08\u8a73\u7d30\u306f\u30da\u30fc\u30b8\u78ba\u8a8d\uff09' : '\u306a\u3057';
+
+  var descLen     = caption.length;
+  var descQuality = descLen > 600 ? '\u25ce' : descLen > 200 ? '\u25cb' : '\u25b3';
+  var descReason  = descLen > 600 ? '\u8aac\u660e\u6587\u304c\u8c4a\u5bcc' : descLen > 200 ? '\u6a19\u6e96\u7684\u306a\u8aac\u660e' : '\u8aac\u660e\u6587\u304c\u5c11\u306a\u3044';
+
+  var features = [];
+  if (hasRanking)                         features.push('\u697d\u5929\u30e9\u30f3\u30ad\u30f3\u30b0\u6383\u8f09\u5546\u54c1');
+  if (giftSupport)                        features.push('\u30ae\u30d5\u30c8\u30fb\u540d\u5165\u308c\u5bfe\u5fdc');
+  if (shipping === '\u9001\u6599\u7121\u6599') features.push('\u9001\u6599\u7121\u6599');
+  if (/\u7ffb\u65e5|\u5373\u65e5/.test(all)) features.push('\u7ffb\u65e5\u30fb\u5373\u65e5\u767a\u9001\u5bfe\u5fdc');
+  if (/\u4fdd\u8a3c/.test(all))           features.push('\u4fdd\u8a3c\u4ed8\u304d');
+  var fb = [
+    ['\u691c\u7d301\u4f4d\u30fb\u5b9a\u756a\u4eba\u6c17\u5546\u54c1', '\u9ad8\u30ec\u30d3\u30e5\u30fc\u6570\u30fb\u4fe1\u983c\u6027\u9ad8'],
+    ['\u30d0\u30e9\u30f3\u30b9\u578b\u30fb\u5b89\u5b9a\u54c1\u8cea', '\u30b3\u30b9\u30d1\u826f\u597d'],
+    ['\u4f4e\u4fa1\u683c\u5e2f\u30fb\u30b3\u30b9\u30d1\u91cd\u8996', '\u30b7\u30f3\u30d7\u30eb\u69cb\u6210'],
+  ];
+  (fb[rank-1] || []).forEach(function(f){ if (features.indexOf(f) === -1) features.push(f); });
+
+  return {
+    label: label, isOwn: false,
+    shopName:    item.shopName || '\u2014',
+    productName: item.itemName || '\u2014',
+    imageUrl:    imageUrl,
+    itemUrl:     item.itemUrl  || '#',
+    price:       price,
+    shipping:    shipping,
+    reviewCount: reviewCount,
+    reviewAvg:   reviewAvg,
+    descQuality: descQuality,
+    descReason:  descReason,
+    searchRank:  rank,
+    pointRate:   pointRate,
+    coupon:      coupon,
+    variations:  null,          /* 競合: HTMLなし → 推測しない → 必ず null */
+    variationsDesc: '',
+    hasRanking:  hasRanking,
+    giftSupport: giftSupport,
+    flickImages: imgs.length || null,
+    features:    features.slice(0, 4),
+    _source:     'api',
+  };
+}
+
+/* JSONP */
+function jsonpRakuten(params) {
+  return new Promise(function(resolve, reject) {
+    var cbName = 'rk_' + Date.now() + '_' + Math.floor(Math.random()*9999);
+    var timer  = setTimeout(function(){ cleanup(); reject(new Error('\u30bf\u30a4\u30e0\u30a2\u30a6\u30c8\uff0815\u79d2\uff09')); }, 15000);
+    function cleanup() {
+      clearTimeout(timer); delete window[cbName];
+      var el = document.getElementById(cbName);
+      if (el) el.parentNode.removeChild(el);
+    }
+    window[cbName] = function(data) {
+      cleanup();
+      if (data.error) { reject(new Error('\u697d\u5929API\u30a8\u30e9\u30fc: ' + (data.error_description || data.error))); return; }
+      resolve(data);
+    };
+    params.applicationId = APP_ID; params.formatVersion = 2; params.callback = cbName;
+    var qs = Object.keys(params).map(function(k){ return encodeURIComponent(k)+'='+encodeURIComponent(params[k]); }).join('&');
+    var s = document.createElement('script');
+    s.id = cbName; s.src = ENDPOINT + '?' + qs;
+    s.onerror = function(){ cleanup(); reject(new Error('\u30cd\u30c3\u30c8\u30ef\u30fc\u30af\u30a8\u30e9\u30fc')); };
+    document.head.appendChild(s);
+  });
+}
+
+/* テーブル描画 */
+function renderTable(prods) {
+  document.getElementById('thead').innerHTML = '<tr>' +
+    '<th class="lc" style="background:#3D4A5C;color:rgba(255,255,255,.78);' +
+    'padding:13px 14px;text-align:left;font-size:11px;letter-spacing:.8px;' +
+    'border-bottom:2px solid transparent">\u6bd4\u8f03\u9805\u76ee</th>' +
+    prods.map(function(p, i) {
+      var bg  = i === 0 ? '#1462D4' : '#555F6E';
+      var src = i === 0
+        ? (p._source === 'html'
+          ? '<br><small style="font-weight:400;opacity:.7;font-size:9px">HTML\u89e3\u6790\uff08\u9ad8\u7cbe\u5ea6\uff09</small>'
+          : '<br><small style="font-weight:400;opacity:.7;font-size:9px">API\u53d6\u5f97</small>')
+        : '';
+      return '<th style="background:'+bg+';color:#fff;padding:13px 14px;' +
+             'text-align:center;border-bottom:2px solid transparent">' + esc(p.label) + src + '</th>';
+    }).join('') + '</tr>';
+
+  var R = [
+    { n:1,  l:'\u30b7\u30e7\u30c3\u30d7\u540d',
+      f: function(p){ return '<strong style="font-size:12px;line-height:1.5">' + esc(p.shopName) + '</strong>'; }},
+
+    { n:2,  l:'\u30b5\u30e0\u30cd\u30a4\u30eb',
+      f: function(p){
+        return p.imageUrl
+          ? '<a href="'+esc(p.itemUrl)+'" target="_blank" rel="noopener">' +
+            '<img src="'+esc(p.imageUrl)+'" class="pim"' +
+            ' onerror="this.parentElement.innerHTML=\'<div class=iph>\ud83d\uded2</div>\'"></a>'
+          : '<div class="iph">\ud83d\uded2</div>';
+      }},
+
+    { n:3,  l:'\u8ca9\u58f2\u4fa1\u683c\uff08\u7a0e\u8fbc\uff09',
+      f: function(p){
+        if (!p.price) return '<span style="color:var(--mu)">\u2014</span>';
+        var src = p._source === 'html' ? 'HTML\u3088\u308a' : 'API\u5b9f\u5024';
+        return '<span class="pv">' + DC.yen(p.price) + '</span><div class="ps">' + src + '</div>';
+      }},
+
+    { n:4,  l:'\u9001\u6599',
+      f: function(p){
+        return p.shipping === '\u9001\u6599\u7121\u6599'
+          ? '<span class="sf2">\u25cf \u9001\u6599\u7121\u6599</span>'
+          : '<span class="sp2">' + esc(p.shipping) + '</span>';
+      }},
+
+    { n:5,  l:'\u5546\u54c1\u8aac\u660e\u306e\u5145\u5b9f\u5ea6',
+      f: function(p){
+        if (!p.descQuality || p.descQuality === '\u2014') return '<span style="color:var(--mu)">\u2014</span>';
+        var cls = p.descQuality === '\u25ce' ? 'bok' : p.descQuality === '\u25cb' ? 'bmd' : 'bng';
+        return '<span class="'+cls+'" style="font-size:16px">'+p.descQuality+'</span>' +
+               '<div style="font-size:10px;color:var(--mu);margin-top:3px">'+esc(p.descReason||'')+'</div>';
+      }},
+
+      { n:6,  l:'検索順位（PR除外後）',
+      f: function(p){
+        if (p.searchRank == null) {
+          return p.isOwn
+            ? '<span class="rkn">—</span><div style="font-size:10px;color:var(--mu);margin-top:2px">URL未入力 or キーワードが異なるため順位外</div>'
+            : '<span class="rkn">—</span>';
+        }
+        var cls = p.searchRank <= 3 ? 'rkg' : p.searchRank <= 10 ? 'rkb' : 'rkn';
+        return '<span class="'+cls+'">'+p.searchRank+'位</span>';
+      }},
+
+    { n:7,  l:'\u30dd\u30a4\u30f3\u30c8\u9084\u5143\u7387',
+      f: function(p){ return '<span class="ptv">' + esc(p.pointRate) + '</span>'; }},
+
+    { n:8,  l:'\u30af\u30fc\u30dd\u30f3',
+      f: function(p){
+        return (p.coupon && p.coupon !== '\u306a\u3057')
+          ? '<span class="cpn">'+esc(p.coupon)+'</span>'
+          : '<span style="color:var(--mu);font-size:12px">\u306a\u3057</span>';
+      }},
+
+    { n:9,  l:'\u30d0\u30ea\u30a8\u30fc\u30b7\u30e7\u30f3\uff08SKU\u6570\uff09',
+      f: function(p){
+        if (p.variations == null) {
+          /* 貴社かつURLモードのみ特別メッセージ */
+          if (p.isOwn) {
+            return p._source === 'html'
+              ? '<span style="color:var(--mu);font-size:12px">\u2014\uff08HTML\u89e3\u6790\u5931\u6557\uff09</span>'
+              : '<span class="rkn" style="font-size:11px">URL\u30e2\u30fc\u30c9:\u53d6\u5f97\u4e0d\u53ef<br><span style="font-size:10px">HTML\u5c65\u304d\u4ed6\u3066\u63a8\u5968</span></span>';
+          }
+          /* 競合: 推測なし、必ず—表示 */
+          return '<span class="rkn" style="font-size:12px">\u2014 \u8981\u30da\u30fc\u30b8\u78ba\u8a8d</span>';
+        }
+        /* 貴社HTMLモード: 正確な値 */
+        return '<span class="nv">'+p.variations+'<span class="nu">\u7a2e</span></span>' +
+               (p.variationsDesc ? '<div style="font-size:10px;color:var(--mu);margin-top:2px">'+esc(p.variationsDesc)+'</div>' : '');
+      }},
+
+    { n:10, l:'\u30ec\u30d3\u30e5\u30fc\u4ef6\u6570',
+      f: function(p){
+        if (!p.reviewCount) return '<span style="color:var(--mu)">\u2014</span>';
+        return '<span class="nv">'+p.reviewCount.toLocaleString('ja-JP')+'<span class="nu">\u4ef6</span></span>';
+      }},
+
+   { n:11, l:'\u30ec\u30d3\u30e5\u30fc\u8a55\u4fa1',
+      f: function(p){
+        if (!p.reviewAvg) return '<span style="color:var(--mu)">\u2014</span>';
+        var pct = Math.round(p.reviewAvg / 5 * 100);
+        var gid = 'sg' + Math.round(p.reviewAvg * 100);
+        var svg = '<svg width="75" height="13" viewBox="0 0 75 13" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 3px">' +
+          '<defs><linearGradient id="' + gid + '" x1="0" x2="1" y1="0" y2="0">' +
+          '<stop offset="' + pct + '%" stop-color="#F59E0B"/>' +
+          '<stop offset="' + pct + '%" stop-color="#D1D5DB"/>' +
+          '</linearGradient></defs>' +
+          '<text x="1" y="11" font-size="13" fill="url(#' + gid + ')">' +
+          '\u2605\u2605\u2605\u2605\u2605</text></svg>';
+        return svg + '<strong style="font-size:15px;display:block;text-align:center">' + p.reviewAvg.toFixed(2) + '</strong>';
+      }},
+
+     
+    { n:12, l:'ランキング掲載有無',
+      f: function(p){ return p.hasRanking ? '<span class="by">✓ あり</span>' : '<span class="bn">✗ なし</span>'; }},
+
+    { n:13, l:'ギフト / 名入れ対応',
+      f: function(p){ return p.giftSupport ? '<span class="by">✓ 対応</span>' : '<span class="bn">✗ 非対応</span>'; }},
+
+    { n:14, l:'フリック画像枚数',
+      f: function(p){
+        if (p.flickImages == null) return '<span style="color:var(--mu)">—</span>';
+        return '<span class="nv">'+p.flickImages+'<span class="nu">枚</span></span>';
+      }},
+
+    { n:15, l:'その他の特徴',
+      f: function(p){
+        if (!(p.features||[]).length) return '<span style="color:var(--mu)">—</span>';
+        return '<ul style="list-style:none;padding:0;margin:0;text-align:left">' +
+          p.features.map(function(feat){
+            return '<li style="font-size:11px;line-height:2;display:flex;gap:4px;align-items:baseline">' +
+                   '<span style="color:var(--B);font-size:7px;flex-shrink:0">■</span>' +
+                   esc(feat) + '</li>';
+          }).join('') + '</ul>';
+      }},
+  ];
+
+  document.getElementById('tbody').innerHTML = R.map(function(row){
+    return '<tr><td class="lc"><span class="nb">'+row.n+'</span>'+row.l+'</td>' +
+      prods.map(function(p, i){
+        return '<td class="'+(i===0?'ow':'')+'" style="padding:12px 14px;text-align:center;border-bottom:1px solid var(--bd)">' +
+               row.f(p) + '</td>';
+      }).join('') + '</tr>';
+  }).join('');
+}
+
+/* サマリーカード */
+function renderSummary(comps) {
+  var vp  = comps.filter(function(p){ return p.price>0; });
+  var avgP = vp.length ? Math.round(vp.reduce(function(s,p){ return s+p.price; },0)/vp.length) : 0;
+  var avgR = comps.length ? Math.round(comps.reduce(function(s,p){ return s+p.reviewCount; },0)/comps.length) : 0;
+  document.getElementById('sgrid').innerHTML = [
+    { l:'競合平均価格',       v: avgP>0?DC.yen(avgP):'—', i:'💴' },
+    { l:'競合平均レビュー数', v: avgR>0?avgR.toLocaleString('ja-JP')+'件':'—', i:'⭐' },
+    { l:'検索1位ショップ',    v: comps[0]?comps[0].shopName:'—', i:'🥇' },
+  ].map(function(m){
+    return '<div class="sc"><div class="sl">'+m.i+' '+m.l+'</div><div class="sv">'+esc(m.v)+'</div></div>';
+  }).join('');
+}
+
+/* ════════════════════════════════════════
+   analyzeFeaturesByAI
+   Claude API を呼び出して全商品の「その他の特徴」を
+   比較ベースで深掘り分析する。
+
+   プロンプト設計:
+     - 全商品データをまとめてJSON化して1回のAPIコールで処理
+     - 各商品ごとに3〜5項目の差別化フィーチャーを生成
+     - 「他商品と比較したときの特徴」を価値表現で記述
+   戻り値: [[商品0のfeatures], [商品1のfeatures], ...] または null
+════════════════════════════════════════ */
+async function analyzeFeaturesByAI(prods) {
+  /* APIキーを取得 */
+  var apiKey = (document.getElementById('anthropicKey') || {}).value;
+  if (apiKey) apiKey = apiKey.trim();
+  if (!apiKey) return null; /* 未入力は静かにスキップ */
+
+  /* 商品データをプロンプト用に整形 */
+  var prodSummaries = prods.map(function(p, i) {
+    return {
+      index: i,
+      label: p.label,
+      productName: (p.productName || '').substring(0, 200),
+      price: p.price,
+      shipping: p.shipping,
+      reviewCount: p.reviewCount,
+      reviewAvg: p.reviewAvg,
+      sku: p.variations,
+      skuDesc: p.variationsDesc || '',
+      flickImages: p.flickImages,
+      searchRank: p.searchRank,
+      hasRanking: p.hasRanking,
+      giftSupport: p.giftSupport,
+      descQuality: p.descQuality,
+      coupon: p.coupon,
+      descSnippet: (p._rawDesc || '').substring(0, 500),
+    };
+  });
+
+  var prompt =
+    '以下は楽天市場の競合比較データです（JSON形式）。\n\n' +
+    '```json\n' + JSON.stringify(prodSummaries, null, 2) + '\n```\n\n' +
+    '【タスク】\n' +
+    '各商品の「その他の特徴」を、他商品と比較した差別化ポイントとして分析してください。\n\n' +
+    '【出力ルール】\n' +
+    '・1商品あたり3〜5項目\n' +
+    '・「他商品と比較して〜に優れている」「競合唯一の〜」「〜が強み」など比較ベースの価値表現を使う\n' +
+    '・「高品質」「便利」などの抽象表現は禁止。レビュー数・SKU数・画像枚数・価格などの数値を根拠に使う\n' +
+    '・機能面の強み・利用シーン・付加価値・ターゲット・他商品との明確な違いを含める\n' +
+    '・重複表現は禁止（同じ内容を違う言い方でまとめない）\n' +
+    '・各商品の特徴が互いに違う内容になるようにする（差別化が分かること）\n\n' +
+    '【改善例】\n' +
+    'NG：送料無料、軽量設計\n' +
+    'OK：競合と比較して圧倒的にレビュー数が多く（' + (prods[0] ? prods[0].reviewCount + '件' : '') + '）、購買実績による安心感が強み。送料無料で競合と同条件\n\n' +
+    '【出力形式】JSONのみ出力し、前後に説明文・マークダウン記号は一切含めないこと。\n' +
+    '{"results": [{"index": 0, "features": ["特徴1（30文字以内）", "特徴2", ...]}, {"index": 1, "features": [...]}, ...]}';
+
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1500,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    if (!resp.ok) {
+      var errBody = await resp.text();
+      console.warn('AI分析APIエラー:', resp.status, errBody.substring(0, 200));
+      return null;
+    }
+
+    var data  = await resp.json();
+    var text  = (data.content || []).map(function(b){ return b.text || ''; }).join('');
+    var clean = text.replace(/```json|```/g, '').trim();
+    var parsed = JSON.parse(clean);
+    var results = parsed.results || [];
+
+    var featureMap = {};
+    results.forEach(function(r){ featureMap[r.index] = r.features || []; });
+    return prods.map(function(_, i){ return featureMap[i] || []; });
+  } catch(e) {
+    console.warn('AI分析失敗:', e.message);
+    return null;
+  }
+}
+
+
+/* PR商品フィルター */
+function isPR(item) {
+  var name = item.itemName || '';
+  return name.indexOf('[PR]') !== -1 || name.indexOf('\u300aPR\u300b') !== -1;
+}
+
+/* 自社商品照合 */
+function isOwnProduct(item, ownItemCode, ownShopCode) {
+  var url = item.itemUrl || '';
+  if (ownItemCode) {
+    return url.indexOf('/' + ownItemCode + '/') !== -1
+        || url.indexOf('/' + ownItemCode + '?') !== -1
+        || url.slice(-(ownItemCode.length + 1)) === '/' + ownItemCode
+        || url.indexOf('/' + ownItemCode) !== -1;
+  }
+  if (ownShopCode) return url.indexOf('/' + ownShopCode + '/') !== -1;
+  return false;
+}
+
+/* PR除外 + 自社順位確定 */
+function processOrganicResults(allItems, own, ownItemCode, ownShopCode) {
+  var organicItems = allItems.filter(function(it) { return !isPR(it); });
+  var prCount = allItems.length - organicItems.length;
+  for (var i = 0; i < organicItems.length; i++) {
+    if (isOwnProduct(organicItems[i], ownItemCode, ownShopCode)) {
+      own.searchRank = i + 1;
+      var oi = organicItems[i];
+      var oCnt = DC.count(oi.reviewCount), oAvg = DC.rating(oi.reviewAverage);
+      if (oCnt > 0) own.reviewCount = oCnt;
+      if (oAvg > 0) own.reviewAvg   = oAvg;
+      if (oi.pointRate != null) own.pointRate = oi.pointRate + '倍';
+      own._reviewSource = 'api'; break;
+    }
+  }
+  return { prCount: prCount };
+}
+
+/* URLのみ指定の競合をAPIで取得 */
+async function buildCompFromUrl(url, label) {
+  var parsed = parseRakutenUrl(url);
+  if (!parsed) {
+    return { label:label, isOwn:false, shopName:'—', productName:'(URL解析失敗)',
+      imageUrl:'', itemUrl:url, price:0, shipping:'—', reviewCount:0, reviewAvg:0,
+      descQuality:'—', descReason:'', searchRank:null, pointRate:'—', coupon:'—',
+      variations:null, variationsDesc:'', hasRanking:false, giftSupport:false, flickImages:null,
+      features:['URLの形式を確認してください'], _source:'error', _reviewSource:'error', _rawDesc:'' };
+  }
+  try {
+    var resp  = await jsonpRakuten({ shopCode: parsed.shopCode, hits: 30 });
+    var items = resp.Items || [];
+    var matched = null;
+    for (var i = 0; i < items.length; i++) {
+      if ((items[i].itemUrl || '').indexOf('/' + parsed.itemCode) !== -1) { matched = items[i]; break; }
+    }
+    if (!matched && items.length > 0) matched = items[0];
+    if (matched) {
+      var prod = buildCompProduct(matched, null, label);
+      prod._rawDesc = (matched.itemCaption || '').substring(0, 500);
+      return prod;
+    }
+  } catch(e) {}
+  return { label:label, isOwn:false, shopName:parsed.shopCode, productName:'(API取得失敗)',
+    imageUrl:'', itemUrl:url, price:0, shipping:'—', reviewCount:0, reviewAvg:0,
+    descQuality:'—', descReason:'', searchRank:null, pointRate:'—', coupon:'—',
+    variations:null, variationsDesc:'', hasRanking:false, giftSupport:false, flickImages:null,
+    features:['HTMLソースを貼り付けるとデータを取得できます'], _source:'error', _reviewSource:'error', _rawDesc:'' };
+}
+
+/* ステップ表示 */
+var STEPS = [
+  { ic:'📋', lb:'貴社商品データを解析・取得中...' },
+  { ic:'🔍', lb:'競合A/B/Cデータを取得中...' },
+  { ic:'📊', lb:'検索順位・レビューを取得しレンダリング中...' },
+  { ic:'🤖', lb:'AIが「その他の特徴」を比較分析中...' },
+];
+function setStep(c, msg, sub) {
+  document.getElementById('lmsg').textContent = msg || '';
+  if (sub !== undefined) document.getElementById('lsub').textContent = sub;
+  document.getElementById('lsteps').innerHTML = STEPS.map(function(s, i){
+    var cls = i<c?'step ok':i===c?'step on':'step';
+    return '<div class="'+cls+'"><span style="font-size:15px;width:20px;text-align:center;flex-shrink:0">'+(i<c?'✓':s.ic)+'</span><span>'+s.lb+'</span></div>';
+  }).join('');
+}
+
+/* メインフロー */
+async function startSearch() {
+  var keyword    = document.getElementById('keyword').value.trim();
+  var isHtmlMode = document.getElementById('tabHtml').classList.contains('active');
+
+  if (!keyword) { alert('検索キーワードを入力してください'); return; }
+
+  var compAUrl = document.getElementById('compAUrl').value.trim();
+  var compBUrl = document.getElementById('compBUrl').value.trim();
+  var compCUrl = document.getElementById('compCUrl').value.trim();
+  if (!compAUrl && !compBUrl && !compCUrl) { alert('競合商品のURLを少なくとも1件入力してください'); return; }
+
+  if (isHtmlMode) {
+    var ownHtml = document.getElementById('ownHtml').value.trim();
+    if (!ownHtml) { alert('自社商品のHTMLソースを貼り付けてください'); return; }
+  } else {
+    var ownUrlVal = document.getElementById('ownUrl').value.trim();
+    if (!ownUrlVal) { alert('自社商品URLを入力してください'); return; }
+  }
+
+  document.getElementById('ldiv').style.display  = 'block';
+  document.getElementById('ewrap').style.display = 'none';
+  document.getElementById('rdiv').style.display  = 'none';
+  document.getElementById('searchBtn').disabled  = true;
+
+  try {
+    var own, comps, prCount;
+    var ownItemCode = null, ownShopCode2 = null;
+
+    if (isHtmlMode) {
+      setStep(0, '自社商品HTMLを解析中...', 'item-page-app-data からSKU・価格・画像を読み取っています');
+      var ownHtmlStr = document.getElementById('ownHtml').value;
+      var ownLinkUrl = document.getElementById('ownUrlForHtml').value.trim();
+      var parsed     = parseOwnFromPastedHtml(ownHtmlStr, ownLinkUrl);
+      if (parsed._error) {
+        own = { label:'貴社', isOwn:true, shopName:'—', productName:'(解析失敗)', imageUrl:'', itemUrl:ownLinkUrl||'#',
+          price:0, shipping:'—', reviewCount:0, reviewAvg:0, descQuality:'—', descReason:'',
+          searchRank:null, pointRate:'—', coupon:'—', variations:null, variationsDesc:'',
+          hasRanking:false, giftSupport:false, flickImages:null,
+          features:['⚠️ ' + parsed._error], _source:'error', _reviewSource:'error', _rawDesc:'' };
+      } else {
+        own = parsed; own._reviewSource = 'html';
+      }
+      ownShopCode2 = (own._shopUrlCode) || null;
+      if (ownLinkUrl) {
+        var parsedOwnUrl = parseRakutenUrl(ownLinkUrl);
+        if (parsedOwnUrl) { ownItemCode = parsedOwnUrl.itemCode; ownShopCode2 = parsedOwnUrl.shopCode; }
+      }
+    } else {
+      setStep(0, '自社商品データをAPIで取得中...', '楽天APIで自社商品を検索しています');
+      var parsedUrl = parseRakutenUrl(ownUrlVal);
+      var ownApi = null;
+      if (parsedUrl) {
+        try {
+          var ownResp = await jsonpRakuten({ shopCode: parsedUrl.shopCode, hits: 1 });
+          var ownItems = ownResp.Items || [];
+          if (ownItems.length > 0) {
+            var it = ownItems[0];
+            var itImgs = it.mediumImageUrls || [];
+            var itImgUrl = itImgs.length > 0 ? (typeof itImgs[0]==='string' ? itImgs[0] : (itImgs[0].imageUrl||'')) : '';
+            var itCapLen = (it.itemCaption||'').length;
+            ownApi = { label:'貴社', isOwn:true, shopName:it.shopName||parsedUrl.shopCode,
+              productName:it.itemName||'—', imageUrl:itImgUrl, itemUrl:it.itemUrl||ownUrlVal,
+              price:DC.price(it.itemPrice), shipping:DC.ship(it.postageFlag),
+              reviewCount:DC.count(it.reviewCount), reviewAvg:DC.rating(it.reviewAverage),
+              descQuality:itCapLen>600?'◎':itCapLen>200?'○':'△',
+              descReason:itCapLen>600?'説明文が豊富':'標準的な説明',
+              searchRank:null, pointRate:(it.pointRate!=null)?it.pointRate+'倍':'1倍',
+              coupon:/クーポン|割引|OFF/.test((it.itemCaption||'')+it.itemName)?'あり':'なし',
+              variations:null, variationsDesc:'',
+              hasRanking:/ランキング|1位/.test(it.itemName||''),
+              giftSupport:it.giftFlag===1||/ギフト|名入れ/.test((it.itemCaption||'')),
+              flickImages:itImgs.length||null,
+              features:['※URLモード: SKU数未取得。HTMLソース貼り付けで正確な値を取得できます'],
+              _source:'api', _reviewSource:'api', _rawDesc:(it.itemCaption||'').substring(0,500) };
+          }
+        } catch(e) {}
+      }
+      own = ownApi || { label:'貴社', isOwn:true, shopName:parsedUrl?parsedUrl.shopCode:'—',
+        productName:'(API取得失敗 - HTMLモードをお試しください)', imageUrl:'', itemUrl:ownUrlVal||'#',
+        price:0, shipping:'—', reviewCount:0, reviewAvg:0, descQuality:'—', descReason:'',
+        searchRank:null, pointRate:'—', coupon:'—', variations:null, variationsDesc:'',
+        hasRanking:false, giftSupport:false, flickImages:null,
+        features:['HTMLソース貼り付けモードで詳細データを取得できます'], _source:'error', _reviewSource:'error', _rawDesc:'' };
+      ownItemCode  = parsedUrl ? parsedUrl.itemCode : null;
+      ownShopCode2 = parsedUrl ? parsedUrl.shopCode : null;
+    }
+
+    setStep(1, '競合A/B/Cのデータを取得中...', 'HTMLソースまたはAPIから競合データを読み取っています');
+    var compDefs = [
+      { label: '競合A', htmlId: 'compAHtml', urlId: 'compAUrl' },
+      { label: '競合B', htmlId: 'compBHtml', urlId: 'compBUrl' },
+      { label: '競合C', htmlId: 'compCHtml', urlId: 'compCUrl' },
+    ];
+    comps = [];
+    for (var ci = 0; ci < compDefs.length; ci++) {
+      var def   = compDefs[ci];
+      var cHtml = document.getElementById(def.htmlId).value.trim();
+      var cUrl  = document.getElementById(def.urlId).value.trim();
+      if (!cUrl) continue;
+      var comp;
+      if (cHtml) {
+        var cParsed = parseOwnFromPastedHtml(cHtml, cUrl);
+        if (cParsed._error) {
+          if (comps.length > 0) await new Promise(function(r){ setTimeout(r, 400); });
+          comp = await buildCompFromUrl(cUrl, def.label);
+        } else {
+          comp = cParsed; comp.label = def.label; comp.isOwn = false; comp.searchRank = null;
+          if (!comp._rawDesc) comp._rawDesc = '';
+        }
+      } else {
+        if (comps.length > 0 || own._source !== 'error') await new Promise(function(r){ setTimeout(r, 400); });
+        comp = await buildCompFromUrl(cUrl, def.label);
+      }
+      comps.push(comp);
+    }
+    if (comps.length === 0) throw new Error('競合商品のURLが1件も入力されていません');
+
+    setStep(2, '比較表をレンダリング中...', '検索順位とレビューデータを取得しています');
+    await new Promise(function(r){ setTimeout(r, 400); });
+    var rankApiResp  = await jsonpRakuten({ keyword: keyword, hits: 30, sort: 'standard' });
+    var rankAllItems = rankApiResp.Items || [];
+    var organicItems = rankAllItems.filter(function(it){ return !isPR(it); });
+    prCount = rankAllItems.length - organicItems.length;
+
+    for (var oi = 0; oi < organicItems.length; oi++) {
+      if (isOwnProduct(organicItems[oi], ownItemCode, ownShopCode2)) {
+        own.searchRank = oi + 1;
+        var oItem = organicItems[oi];
+        var oCnt = DC.count(oItem.reviewCount), oAvg = DC.rating(oItem.reviewAverage);
+        if (oCnt > 0) own.reviewCount = oCnt;
+        if (oAvg > 0) own.reviewAvg   = oAvg;
+        if (oItem.pointRate != null) own.pointRate = oItem.pointRate + '倍';
+        own._reviewSource = 'api'; break;
+      }
+    }
+
+    comps.forEach(function(comp) {
+      var cp = parseRakutenUrl(comp.itemUrl || '');
+      if (!cp) return;
+      for (var ri = 0; ri < organicItems.length; ri++) {
+        var apiItem = organicItems[ri];
+        var rUrl    = apiItem.itemUrl || '';
+        var codeInUrl = rUrl.indexOf('/' + cp.itemCode + '/') !== -1
+          || rUrl.indexOf('/' + cp.itemCode + '?') !== -1
+          || rUrl.slice(-(cp.itemCode.length + 1)) === '/' + cp.itemCode
+          || rUrl.indexOf('/' + cp.shopCode + '/' + cp.itemCode) !== -1;
+        if (codeInUrl) {
+          comp.searchRank = ri + 1;
+          var cnt = DC.count(apiItem.reviewCount), avg = DC.rating(apiItem.reviewAverage);
+          if (cnt > 0) comp.reviewCount = cnt;
+          if (avg > 0) comp.reviewAvg   = avg;
+          if (apiItem.pointRate != null) comp.pointRate = apiItem.pointRate + '倍';
+          comp._reviewSource = 'api'; break;
+        }
+      }
+    });
+
+    var allProds = [own].concat(comps);
+    renderSummary(comps);
+    renderTable(allProds);
+
+    /* ══ Step 3: Claude AIで「その他の特徴」を比較分析して差し替え ══ */
+    setStep(3, 'AIが「その他の特徴」を比較分析中...', '各商品の差別化ポイントを他社比較の観点で深掘りしています');
+    try {
+      var aiFeatures = await analyzeFeaturesByAI(allProds);
+      if (aiFeatures) {
+        allProds.forEach(function(p, i) {
+          if (aiFeatures[i] && aiFeatures[i].length) p.features = aiFeatures[i];
+        });
+        var rows = document.querySelectorAll('#tbody tr');
+        if (rows.length >= 15) {
+          var cells = rows[14].querySelectorAll('td');
+          allProds.forEach(function(p, i) {
+            var td = cells[i + 1];
+            if (!td) return;
+            td.innerHTML = p.features.length
+              ? '<ul style="list-style:none;padding:0;margin:0;text-align:left">' +
+                p.features.map(function(f){
+                  return '<li style="font-size:11px;line-height:1.7;margin-bottom:4px;display:flex;gap:5px;align-items:flex-start">' +
+                         '<span style="color:var(--B);font-size:8px;flex-shrink:0;margin-top:3px">◆</span>' +
+                         esc(f) + '</li>';
+                }).join('') + '</ul>'
+              : '<span style="color:var(--mu)">—</span>';
+          });
+        }
+      }
+    } catch(aiErr) { /* AI分析失敗はサイレント無視 */ }
+
+    var hybridApi = own._source === 'html' && own._reviewSource === 'api';
+    var srcBadge = own._source === 'html'
+      ? (hybridApi
+          ? '<span class="br">● 貴社: HTML+API統合 / 競合: HTML+API / 検索順位: www.rakuten.co.jp基準（PR' + prCount + '件除外）</span>'
+          : '<span class="br">● 貴社: HTML解析 / 競合: HTML+API / 検索順位: www.rakuten.co.jp基準（PR' + prCount + '件除外）</span>')
+      : '<span style="background:var(--Alt);color:var(--Am);border-radius:3px;padding:2px 8px;font-size:11px;font-weight:600">● 貴社: API / 競合: HTML+API / 検索順位: www.rakuten.co.jp基準（PR' + prCount + '件除外）</span>';
+
+    document.getElementById('rmeta').innerHTML =
+      '検索キーワード: <strong style="color:var(--B)">' + esc(keyword) + '</strong>' +
+      ' &nbsp;|&nbsp; ' + new Date().toLocaleString('ja-JP') + ' &nbsp;' + srcBadge;
+
+    document.getElementById('fnote').innerHTML =
+      '<strong>貴社データ：</strong>' +
+      (own._source === 'html'
+        ? (hybridApi ? '貼り付けHTMLの <code>item-page-app-data</code> JSON を解析。SKU数=HTML直接解析値、レビュー件数・評価=楽天API実値。'
+                     : '貼り付けHTMLの <code>item-page-app-data</code> JSON を解析。')
+        : 'URLから楽天API（shopCode検索）でデータ取得。SKU数は取得不可（—表示）。') +
+      '<br><strong>競合データ：</strong>' +
+      '競合A/B/C: ユーザー指定商品。HTMLあり→直接解析（SKU正確）、HTMLなし→APIから取得。' +
+      '<br><strong>検索順位：</strong>www.rakuten.co.jp 基準 — APIオーガニック順位（PR除外後）。' +
+      '<br><strong>その他の特徴：</strong>' +
+      (document.getElementById('anthropicKey').value.trim()
+        ? '🤖 Claude AIによる比較分析結果。'
+        : 'キーワード抽出（AIキー入力でAI比較分析に強化）。');
+
+    document.getElementById('ldiv').style.display = 'none';
+    document.getElementById('rdiv').style.display = 'block';
+
+  } catch(err) {
+    document.getElementById('ldiv').style.display  = 'none';
+    document.getElementById('ewrap').style.display = 'block';
+    document.getElementById('ewrap').innerHTML =
+      '<div class="err"><strong>⚠ エラーが発生しました</strong><br>' + esc(err.message) +
+      '<br><br><strong>確認事項：</strong><br>' +
+      '・HTMLモードの場合: view-source: で取得した全文を貼り付けてください<br>' +
+      '・競合URLが正しい楽天商品ページのURLか確認してください<br>' +
+      '・ネットワーク接続を確認してください</div>';
+    document.getElementById('searchBtn').disabled = false;
+  }
+}
+
+function resetApp() {
+  document.getElementById('rdiv').style.display  = 'none';
+  document.getElementById('ewrap').style.display = 'none';
+  document.getElementById('searchBtn').disabled  = false;
+}
+
+function esc(s) {
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && e.target.id === 'keyword') startSearch();
+});
+</script>
+</body>
+</html>
